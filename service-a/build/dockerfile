@@ -1,0 +1,19 @@
+FROM golang:1.23.2 AS build
+
+WORKDIR /app
+
+COPY . .
+
+RUN go mod tidy
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o weather-api-service-a ./service-a/cmd/api
+
+FROM scratch
+
+WORKDIR /app
+
+COPY --from=alpine /etc/ssl/certs /etc/ssl/certs
+COPY --from=build /app/weather-api-service-a .
+
+EXPOSE 8181
+
+ENTRYPOINT [ "./weather-api-service-a" ]

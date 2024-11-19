@@ -1,4 +1,13 @@
 services:
+  weather-api-service-a:
+    build:
+      context: .
+      dockerfile: service-a/build/dockerfile
+    container_name: weather-api-service-a
+    ports:
+      - "8181:8181"
+    restart: always
+
   weather-api:
     build:
       context: .

@@ -8,11 +8,11 @@ services:
       - "8181:8181"
     restart: always
 
-  weather-api:
+  weather-api-service-b:
     build:
       context: .
-      dockerfile: dockerfile
-    container_name: weather-api
+      dockerfile: service-b/build/dockerfile
+    container_name: weather-api-service-b
     ports:
       - "8080:8080"
     restart: always

@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/jordanoluz/goexpert-weather-api/internal/infra/web/handler"
+	"github.com/jordanoluz/goexpert-weather-api/service-b/internal/infra/web/handler"
 )
 
 const ApiPort = 8080
 
 func main() {
-	http.HandleFunc("GET /weather", handler.WeatherHandler)
+	http.HandleFunc("GET /weather", handler.GetWeatherHandler)
 
 	log.Printf("listening and serving on port: %d", ApiPort)
 

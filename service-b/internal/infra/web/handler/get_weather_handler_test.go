@@ -68,18 +68,18 @@ func TestRoundToTwoDecimal(t *testing.T) {
 	}
 }
 
-func TestWeatherHandler(t *testing.T) {
+func TestGetWeatherHandler(t *testing.T) {
 	tests := []struct {
 		name           string
 		zipcode        string
 		expectedStatus int
-		expectedBody   WeatherResponse
+		expectedBody   GetWeatherResponse
 	}{
 		{
 			name:           "valid request",
 			zipcode:        "93010001",
 			expectedStatus: http.StatusOK,
-			expectedBody:   WeatherResponse{},
+			expectedBody:   GetWeatherResponse{},
 		},
 		{
 			name:           "invalid zip code",
@@ -98,12 +98,12 @@ func TestWeatherHandler(t *testing.T) {
 			req := httptest.NewRequest("GET", "/weather?zipcode="+tt.zipcode, nil)
 			rec := httptest.NewRecorder()
 
-			WeatherHandler(rec, req)
+			GetWeatherHandler(rec, req)
 
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 
 			if tt.expectedStatus == http.StatusOK {
-				var result WeatherResponse
+				var result GetWeatherResponse
 				err := json.NewDecoder(rec.Body).Decode(&result)
 				assert.NoError(t, err)
 				assert.NotNil(t, tt.expectedBody, result)

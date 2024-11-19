@@ -14,7 +14,8 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-type WeatherResponse struct {
+type GetWeatherResponse struct {
+	City                  string  `json:"city"`
 	TemperatureCelcius    float64 `json:"temp_C"`
 	TemperatureFahrenheit float64 `json:"temp_F"`
 	TemperatureKelvin     float64 `json:"temp_K"`
@@ -34,7 +35,7 @@ type WeatherApiCurrentResponse struct {
 
 const WeatherApiKey = "28238955cc184dffb22235923241111"
 
-func WeatherHandler(w http.ResponseWriter, r *http.Request) {
+func GetWeatherHandler(w http.ResponseWriter, r *http.Request) {
 	zipcode := r.URL.Query().Get("zipcode")
 
 	if !isValidZipCode(zipcode) {
@@ -56,7 +57,8 @@ func WeatherHandler(w http.ResponseWriter, r *http.Request) {
 
 	temperatureCelcius := weatherApiResponse.Current.TemperatureCelcius
 
-	weatherResponse := WeatherResponse{
+	weatherResponse := GetWeatherResponse{
+		City:                  city,
 		TemperatureCelcius:    roundToTwoDecimal(temperatureCelcius),
 		TemperatureFahrenheit: roundToTwoDecimal(temperatureCelcius*1.8 + 32),
 		TemperatureKelvin:     roundToTwoDecimal(temperatureCelcius + 273),

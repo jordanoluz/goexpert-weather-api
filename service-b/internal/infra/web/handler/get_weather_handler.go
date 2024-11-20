@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -9,6 +10,9 @@ import (
 	"strings"
 	"unicode"
 
+	internalOtel "github.com/jordanoluz/goexpert-weather-api/otel"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -36,6 +40,13 @@ type WeatherApiCurrentResponse struct {
 const WeatherApiKey = "28238955cc184dffb22235923241111"
 
 func GetWeatherHandler(w http.ResponseWriter, r *http.Request) {
+	carrier := propagation.HeaderCarrier(r.Header)
+
+	ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
+
+	ctx, span := internalOtel.Tracer.Start(ctx, "get-weather-handler")
+	defer span.End()
+
 	zipcode := r.URL.Query().Get("zipcode")
 
 	if !isValidZipCode(zipcode) {
@@ -43,13 +54,13 @@ func GetWeatherHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	city, err := fetchCity(zipcode)
+	city, err := fetchCity(ctx, zipcode)
 	if err != nil {
 		http.Error(w, "can not find zipcode", http.StatusNotFound)
 		return
 	}
 
-	weatherApiResponse, err := fetchWeather(city)
+	weatherApiResponse, err := fetchWeather(ctx, city)
 	if err != nil {
 		http.Error(w, "failed to fetch temperature", http.StatusInternalServerError)
 		return
@@ -81,10 +92,18 @@ func isValidZipCode(zipcode string) bool {
 	return match
 }
 
-func fetchCity(zipcode string) (string, error) {
+func fetchCity(ctx context.Context, zipcode string) (string, error) {
+	ctx, span := internalOtel.Tracer.Start(ctx, "fetch-city")
+	defer span.End()
+
 	url := fmt.Sprintf("https://viacep.com.br/ws/%s/json/", zipcode)
 
-	res, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request with context: %w", err)
+	}
+
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch city: %w", err)
 	}
@@ -106,13 +125,21 @@ func fetchCity(zipcode string) (string, error) {
 	return viaCepResponse.City, nil
 }
 
-func fetchWeather(city string) (*WeatherApiResponse, error) {
+func fetchWeather(ctx context.Context, city string) (*WeatherApiResponse, error) {
+	ctx, span := internalOtel.Tracer.Start(ctx, "fetch-weather")
+	defer span.End()
+
 	city = removeAccents(city)
 	city = strings.ReplaceAll(city, " ", "%20")
 
 	url := fmt.Sprintf("https://api.weatherapi.com/v1/current.json?key=%s&q=%s", WeatherApiKey, city)
 
-	res, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request with context: %w", err)
+	}
+
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch weather: %w", err)
 	}

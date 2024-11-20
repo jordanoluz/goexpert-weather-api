@@ -4,6 +4,13 @@ services:
       context: .
       dockerfile: service-a/build/dockerfile
     container_name: weather-api-service-a
+    depends_on:
+      - zipkin
+    environment:
+      - SERVICE_B_URL=http://weather-api-service-b:8080
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    networks:
+      - weather-api-network
     ports:
       - "8181:8181"
     restart: always
@@ -13,6 +20,25 @@ services:
       context: .
       dockerfile: service-b/build/dockerfile
     container_name: weather-api-service-b
+    depends_on:
+      - zipkin
+    environment:
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    networks:
+      - weather-api-network
     ports:
       - "8080:8080"
     restart: always
+
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin:latest
+    networks:
+      - weather-api-network
+    ports:
+      - "9411:9411"
+    restart: always
+  
+networks:
+  weather-api-network:
+    driver: bridge

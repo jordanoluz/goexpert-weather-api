@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/jordanoluz/goexpert-weather-api/otel"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -92,6 +94,10 @@ func TestGetWeatherHandler(t *testing.T) {
 			expectedStatus: http.StatusNotFound,
 		},
 	}
+
+	tracerProvicer, err := otel.InitTracerProvider()
+	defer tracerProvicer.Shutdown(context.Background())
+	assert.NoError(t, err)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,14 +1,6 @@
 # Go Expert Weather API
 
-This is a simple weather API project developed in Go, which provides temperature information based on the postal code (zipcode).
-
-## API URL
-
-The API is published and available at the following URL:
-
-**Base URL**: `https://goexpert-weather-api-1036920645078.southamerica-east1.run.app/weather`
-
-You can use this base URL to test the API endpoints without needing to run the project locally.
+This is a simple weather API project developed in Go that provides temperature information based on the postal code (zipcode), using Open Telemetry and Zipkin for tracing and spans.
 
 ## How to Run the Project Locally
 
@@ -16,19 +8,27 @@ You can use this base URL to test the API endpoints without needing to run the p
 
 Clone this repository to your local machine:
 
-```git clone https://github.com/jordanoluz/goexpert-weather-api.git```
+```
+git clone https://github.com/jordanoluz/goexpert-weather-api.gi
+```
 
 ### 2. Navigate to the project directory
 
-```cd goexpert-weather-api```
+Change into the project directory:
+
+```
+cd goexpert-weather-api
+```
 
 ### 3. Run Docker Compose
 
-To run the project, use Docker Compose to build and start the containers:
+To run the project using Docker, use Docker Compose to build and start the containers:
 
-```docker-compose up -d --build```
+```
+docker compose up -d --build
+```
 
-This will build the Docker image and start the container with the application.
+This will build the Docker images and start the application containers.
 
 ### 4. Automated Tests
 
@@ -36,22 +36,27 @@ The Docker Compose setup will automatically run tests using the go test command 
 
 ### 5. Test the API
 
-Once the container is running, you can test the API using the following curl commands:
+Once the container is running, you can test the API using the following `curl` commands:
 
-- To check the temperature for a **valid zipcode**:
+- To check the POST request for a **valid zipcode**:
 
-```curl "http://localhost:8080/weather?zipcode=93010001"```
+```
+curl -X POST http://localhost:8181/weather \
+     -H "Content-Type: application/json" \
+     -d '{
+         "cep": "29902555"
+     }'
 
-Expected response: Temperature data for the given zipcode.
+```
 
-- To test an **invalid zipcode**:
+Expected response: City name and temperature data for the given zipcode.
 
-```curl "http://localhost:8080/weather?zipcode=1234"```
+### 6. Check the Tracing
 
-Expected response: `invalid zipcode`. 
+After making the requests mentioned in step 5, you can access the following URL to view the tracing and span data:
 
-- To test a zipcode **zipcode not found**:
+```
+http://localhost:9411
+```
 
-```curl "http://localhost:8080/weather?zipcode=78654321"```
-
-Expected response: `can not find zipcode`.
+This will display the tracing results, allowing you to monitor the flow of requests through OpenTelemetry and Zipkin.

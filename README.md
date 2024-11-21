@@ -9,7 +9,7 @@ This is a simple weather API project developed in Go that provides temperature i
 Clone this repository to your local machine:
 
 ```
-git clone https://github.com/jordanoluz/goexpert-weather-api.gi
+git clone https://github.com/jordanoluz/goexpert-weather-api.git
 ```
 
 ### 2. Navigate to the project directory
